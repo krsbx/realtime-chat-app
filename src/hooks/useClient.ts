@@ -13,7 +13,7 @@ type Params = {
   token: TokenOrProvider;
 };
 
-const useClient = ({ apiKey, user, token }: Params) => {
+const useClient = ({ apiKey, token, user }: Params) => {
   const [chatClient, setChatClient] =
     useState<StreamChat<DefaultGenerics> | null>(null);
 

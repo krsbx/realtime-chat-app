@@ -8,15 +8,7 @@ const App = () => {
 
   if (!token || !streamToken || _.isEmpty(user)) return <LoginUI />;
 
-  return (
-    <ChatUI
-      token={streamToken}
-      user={{
-        id: user.uuid,
-        username: user.username,
-      }}
-    />
-  );
+  return <ChatUI />;
 };
 
 export default App;

@@ -1,8 +1,5 @@
-import useClient from '../hooks/useClient';
 import {
   Channel,
-  ChannelHeader,
-  ChannelList,
   Chat,
   LoadingIndicator,
   MessageInput,
@@ -10,29 +7,28 @@ import {
   Thread,
   Window,
 } from 'stream-chat-react';
-import {
-  ChannelFilters,
-  ChannelSortBase,
-  DefaultGenerics,
-  OwnUserResponse,
-  TokenOrProvider,
-  UserResponse,
-} from 'stream-chat';
-import { DefaultStreamChatGenerics } from 'stream-chat-react/dist/types/types';
+import useClient from '../hooks/useClient';
+import CustomChannelHeader from './CustomChannelHeader';
 import FloatingButton from './FloatingButton';
+import useAuth from '../hooks/useAuth';
+import { useMemo } from 'react';
+import CustomChannelList from './CustomChannelList';
 
-const ChatUI = ({ user, token }: Props) => {
-  const filters = {
-    type: 'messaging',
-    members: { $in: [user.id] },
-  } as ChannelFilters<DefaultStreamChatGenerics>;
-  const sort = {
-    last_message_at: -1,
-  } as ChannelSortBase<DefaultStreamChatGenerics>;
+const ChatUI = () => {
+  const { user: currentUser, streamToken: token } = useAuth();
+  const user = useMemo(
+    () => ({
+      id: currentUser.uuid,
+      username: currentUser.username,
+      role: currentUser.role,
+    }),
+    [currentUser.role, currentUser.username, currentUser.uuid]
+  );
+
   const chatClient = useClient({
     apiKey: import.meta.env.VITE_STREAM_KEY as string,
-    user,
     token,
+    user,
   });
 
   if (!chatClient) {
@@ -41,10 +37,10 @@ const ChatUI = ({ user, token }: Props) => {
 
   return (
     <Chat client={chatClient} theme="str-chat__theme-light">
-      <ChannelList filters={filters} sort={sort} />
+      <CustomChannelList />
       <Channel>
         <Window>
-          <ChannelHeader />
+          <CustomChannelHeader />
           <MessageList />
           <MessageInput />
         </Window>
@@ -53,11 +49,6 @@ const ChatUI = ({ user, token }: Props) => {
       <FloatingButton />
     </Chat>
   );
-};
-
-type Props = {
-  user: OwnUserResponse<DefaultGenerics> | UserResponse<DefaultGenerics>;
-  token: TokenOrProvider;
 };
 
 export default ChatUI;

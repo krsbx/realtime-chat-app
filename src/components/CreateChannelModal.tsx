@@ -34,15 +34,16 @@ const CreateChannelModal = ({ isVisible, onClose }: Props) => {
   const { client } = useChatContext();
 
   const createChannel = useCallback(async () => {
-    if (!value.members?.length || !value.name) return;
+    if (!value.members?.length || value.members.length < 2) return;
 
     try {
       setIsSubmitting(true);
 
-      const channel = client.channel('messaging', value);
+      const channel = client.channel(
+        'messaging',
+        _(value).pickBy(_.identity).value()
+      );
       await channel.create();
-
-      onClose();
     } finally {
       setIsSubmitting(false);
       setSelectedItems([]);
@@ -76,11 +77,6 @@ const CreateChannelModal = ({ isVisible, onClose }: Props) => {
       ...curr,
       [key]: e.target.value,
     }));
-  };
-
-  const onCreateItem = (item: { value: string; label: string }) => {
-    setPickerItems((curr) => [...curr, item]);
-    setSelectedItems((curr) => [...curr, item]);
   };
 
   const onSelectedItemsChange = (
@@ -118,7 +114,7 @@ const CreateChannelModal = ({ isVisible, onClose }: Props) => {
             p={5}
           >
             <Flex rowGap={5} flexDirection={'column'} width={'100%'}>
-              <FormControl isRequired>
+              <FormControl>
                 <FormLabel>Channel Name</FormLabel>
                 <Input
                   type="text"
@@ -133,8 +129,8 @@ const CreateChannelModal = ({ isVisible, onClose }: Props) => {
                 label="Members"
                 placeholder="Type new member name"
                 selectedItems={selectedItems}
-                onCreateItem={onCreateItem}
                 onSelectedItemsChange={onSelectedItemsChange}
+                disableCreateItem
               />
               <Button
                 type="submit"

@@ -1,12 +1,12 @@
 import {
   Channel,
   Chat,
-  LoadingIndicator,
   MessageInput,
   MessageList,
   Thread,
   Window,
 } from 'stream-chat-react';
+import { Flex, Spinner } from '@chakra-ui/react';
 import useClient from '../hooks/useClient';
 import CustomChannelHeader from './CustomChannelHeader';
 import FloatingButton from './FloatingButton';
@@ -32,7 +32,16 @@ const ChatUI = () => {
   });
 
   if (!chatClient) {
-    return <LoadingIndicator />;
+    return (
+      <Flex
+        justifyContent={'center'}
+        alignItems={'center'}
+        w={'100vw'}
+        h={'100vh'}
+      >
+        <Spinner size={'xl'} />
+      </Flex>
+    );
   }
 
   return (

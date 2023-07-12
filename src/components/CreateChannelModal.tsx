@@ -18,10 +18,12 @@ import { DefaultStreamChatGenerics } from 'stream-chat-react/dist/types/types';
 import { UseMultipleSelectionStateChange } from 'downshift/typings';
 import Form from './Form';
 import { getUsers } from '../actions/users';
+import useAuth from '../hooks/useAuth';
 
 const CreateChannelModal = ({ isVisible, onClose }: Props) => {
   const [isFetching, setIsFetching] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
   const [pickerItems, setPickerItems] = useState<
     { value: string; label: string }[]
   >([]);
@@ -34,27 +36,32 @@ const CreateChannelModal = ({ isVisible, onClose }: Props) => {
   const { client } = useChatContext();
 
   const createChannel = useCallback(async () => {
-    if (!value.members?.length || value.members.length < 2) return;
+    if (!value.members?.length || value.members.length < 1) return;
 
     try {
       setIsSubmitting(true);
 
-      const channel = client.channel(
-        'messaging',
-        _(value).pickBy(_.identity).value()
-      );
+      const channel = client.channel('messaging', {
+        ..._(value).pickBy(_.identity).value(),
+        members: [...value.members, user.uuid],
+      });
       await channel.create();
     } finally {
       setIsSubmitting(false);
       setSelectedItems([]);
       onClose();
     }
-  }, [client, onClose, value]);
+  }, [client, onClose, user.uuid, value]);
 
   useEffect(() => {
     if (!isVisible) return;
 
-    void getUsers('limit=all').then(([err, res]) => {
+    const queries = _.compact([
+      'limit=all',
+      user?.uuid && `filters=uuid != "${user.uuid}"`,
+    ]);
+
+    void getUsers(queries.join('&')).then(([err, res]) => {
       if (err) {
         setIsFetching(false);
         return;
@@ -68,7 +75,7 @@ const CreateChannelModal = ({ isVisible, onClose }: Props) => {
       setPickerItems(items);
       setIsFetching(false);
     });
-  }, [isVisible]);
+  }, [isVisible, user.uuid]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.name;
@@ -121,6 +128,7 @@ const CreateChannelModal = ({ isVisible, onClose }: Props) => {
                   placeholder="Channel Name"
                   name={'name'}
                   disabled={isSubmitting || isFetching}
+                  value={value.name}
                   onChange={onChange}
                 />
               </FormControl>

@@ -44,10 +44,15 @@ const LoginUI = () => {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.name as keyof typeof value;
+    let newValue = e.target.value;
+
+    if (key === 'username') {
+      newValue = newValue.replace(/ /g, '').toLowerCase();
+    }
 
     setValue((curr) => ({
       ...curr,
-      [key]: e.target.value,
+      [key]: newValue,
     }));
   };
 
@@ -76,6 +81,7 @@ const LoginUI = () => {
               placeholder="Username"
               name={'username'}
               disabled={isSubmitting}
+              value={value.username}
               onChange={onChange}
             />
           </FormControl>
@@ -86,6 +92,7 @@ const LoginUI = () => {
               placeholder="Password"
               name={'password'}
               disabled={isSubmitting}
+              value={value.password}
               onChange={onChange}
             />
           </FormControl>

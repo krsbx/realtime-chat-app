@@ -13,7 +13,7 @@ export const CustomPreview = ({
   ...props
 }: ChannelPreviewUIComponentProps) => {
   const { user } = useAuth();
-  const [channelName, setChannelName] = useState('');
+  const [channelName, setChannelName] = useState<string | undefined>();
 
   useEffect(() => {
     if (!channel || !user?.uuid) return;
@@ -25,7 +25,12 @@ export const CustomPreview = ({
         },
       })
       .then((value) => {
-        setChannelName(value.members?.[0]?.user?.username ?? '');
+        if (value.members.length > 1) {
+          setChannelName(undefined);
+          return;
+        }
+
+        setChannelName(value.members?.[0]?.user?.username);
       });
   }, [channel, user.uuid]);
 
